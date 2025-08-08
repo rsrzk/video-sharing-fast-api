@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 import httpx
 from datetime import datetime, UTC
+import mimetypes
 
 load_dotenv()
 
@@ -58,26 +59,29 @@ async def upload_form(request: Request):
     return templates.TemplateResponse('upload.html', {'request': request})
 
 @app.post('/upload')
-async def upload_video(request: Request, title: str = File(...), video_file: UploadFile = File(...)):
-    contents = await video_file.read()
+async def upload_video(request: Request, title: str = Form(...), video_file: UploadFile = File(...)):
+    file_content = await video_file.read()
     
     file_extension = video_file.filename.split('.')[-1]
     file_name = f"{title.replace(' ', '_')}.{file_extension}"
-    res = supabase.storage.from_(SUPABASE_BUCKET).upload(file_name, contents)
-    
-    if res.status_code >= 400:
-        message = 'Error uploading video.'
-    else:
-        message = 'Video uploaded successfully.'
-        
-    return templates.TemplateResponse('upload.html', {'request': request, 'message': message})
 
+    # Detect MIME type for correct playback
+    mime_type, _ = mimetypes.guess_type(file_name)
+    if mime_type is None:
+        mime_type = "application/octet-stream"
 
+    # Upload to Supabase
+    try:
+        supabase.storage.from_(SUPABASE_BUCKET).upload(
+            file_name,
+            file_content,
+            file_options={"content-type": mime_type},  # headers
+        )
+        message = f"Video '{title}' uploaded successfully!"
+    except Exception as e:
+        message = f"Upload failed: {str(e)}"
 
-
-
-
-
-
-
-
+    return templates.TemplateResponse(
+        "upload.html",
+        {"request": request, "message": message}
+    )

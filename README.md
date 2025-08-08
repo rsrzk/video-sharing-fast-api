@@ -8,7 +8,6 @@ Set up:
 2. Created venv with `python3 -m venv .venv`. Activate with `.venv/bin/activate`
 3. Copied over static and templates folder from tutorial repo (available in video description)
 4. Installed dependencies with `pip install supabase fastapi uvicorn jinja2 python-dotenv python-multipart httpx`
-5. Database was set up on supabase.com (free plan has about 50mb). Then update .env file with environment variables.
-6. To run app, `uvicorn main:app --reload`
-
-Stopped vid at 9:00
+5. Created .gituignore and requirements.txt file
+6. Database was set up on supabase.com (free plan has about 50mb). Then update .env file with environment variables.
+7. To run app, `uvicorn main:app --reload`
